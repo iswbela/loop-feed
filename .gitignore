@@ -1,0 +1,6 @@
+kommons_config.json
+debug_login_page.html
+debug_pos_login.html
+*.png
+__pycache__/
+context.md
