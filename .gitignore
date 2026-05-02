@@ -1,6 +1,25 @@
-kommons_config.json
-debug_login_page.html
-debug_pos_login.html
-*.png
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+
+# Dados locais gerados em runtime
+kommons_config.json
+kommons_messages.json
+
+# Arquivos de debug gerados automaticamente
+debug_*.html
+debug_*.png
+debug_pos_login.html
+update_*.html
+update_*.png
+login_failed.png
+error_debug.png
+
+# Páginas capturadas do browser
+Kommons - International -_files/
+Kommons - International -.html
+
+# Misc
 context.md
+test_kommons.py
