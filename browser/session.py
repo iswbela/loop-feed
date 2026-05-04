@@ -1,20 +1,69 @@
-import os
 import queue
 import threading
 import traceback
 
 from playwright.sync_api import sync_playwright
 
-from config import BASE_DIR, LOGIN_URL, DASHBOARD_URL, USER_AGENT
+from config import LOGIN_URL, DASHBOARD_URL, USER_AGENT
 from utils import ts
+
+_READ_ADS_JS = """() => {
+    const buttons = Array.from(document.querySelectorAll('button.editButton'))
+        .filter(b => b.offsetParent !== null);
+    const seen = new Set();
+    const result = [];
+
+    for (const btn of buttons) {
+        const escortId = btn.dataset.escort || '';
+        if (!escortId || seen.has(escortId)) continue;
+        seen.add(escortId);
+
+        const photoDiv = btn.closest('[class*="photo-edit"]') || btn.parentElement;
+        const row      = btn.closest('.row') || photoDiv?.parentElement;
+        const img      = photoDiv ? photoDiv.querySelector('img') : null;
+        const rowText  = row ? row.innerText : '';
+
+        const nameMatch = rowText.match(/Name:\\s*([^\\n]+)/);
+        let imgSrc = img ? img.src : '';
+        if (imgSrc.startsWith('//')) imgSrc = 'https:' + imgSrc;
+
+        const boostBtnOk  = document.querySelector(
+            `button.boostButton[data-escort="${escortId}"]:not([disabled])`);
+        const boostBtnAny = document.querySelector(
+            `button.boostButton[data-escort="${escortId}"]`);
+        const countdownSpan = document.querySelector(
+            `span.boost-countdown[data-escort="${escortId}"]`);
+
+        let usedToday = '0';
+        if (boostBtnAny) {
+            const section = boostBtnAny.closest('.manual-boost-col, .profile-boost');
+            const el = section ? section.querySelector('.boost-used-today') : null;
+            if (el) usedToday = el.textContent.trim();
+        }
+
+        const countdown  = countdownSpan ? countdownSpan.textContent.trim() : '';
+        const inCooldown = (/\\d+:\\d+/.test(countdown)) || (!boostBtnOk);
+
+        result.push({
+            escort_id:    escortId,
+            image_url:    imgSrc,
+            name:         nameMatch ? nameMatch[1].trim() : (escortId || 'Anúncio'),
+            in_cooldown:  inCooldown,
+            cooldown_time: countdown,
+            used_today:   usedToday,
+        });
+    }
+    return result;
+}"""
 
 
 class PlaywrightSession:
-    _CMD_UPDATE = "update"
-    _CMD_STOP = "stop"
+    _CMD_BOOST   = "boost"
+    _CMD_REFRESH = "refresh"
+    _CMD_STOP    = "stop"
 
     def __init__(self):
-        self._q = queue.Queue()
+        self._q      = queue.Queue()
         self._thread = None
 
     def login(self, user: str, password: str, status_cb=None, done_cb=None):
@@ -28,8 +77,11 @@ class PlaywrightSession:
         )
         self._thread.start()
 
-    def update(self, edit_url: str, description_fn, status_cb=None, done_cb=None):
-        self._q.put((self._CMD_UPDATE, (edit_url, description_fn, status_cb, done_cb)))
+    def boost(self, escort_id: str, status_cb=None, done_cb=None):
+        self._q.put((self._CMD_BOOST, (escort_id, status_cb, done_cb)))
+
+    def refresh(self, done_cb=None):
+        self._q.put((self._CMD_REFRESH, done_cb))
 
     def stop(self):
         self._q.put((self._CMD_STOP, None))
@@ -40,13 +92,12 @@ class PlaywrightSession:
             if status_cb:
                 status_cb(msg)
 
-        pw = None
-        browser = None
+        pw = browser = None
         try:
-            pw = sync_playwright().start()
+            pw      = sync_playwright().start()
             browser = pw.chromium.launch(headless=True)
             context = browser.new_context(user_agent=USER_AGENT)
-            page = context.new_page()
+            page    = context.new_page()
 
             page.on("dialog", lambda d: (
                 print(f"{ts()} [DIALOG] {d.type}: {d.message!r}"),
@@ -73,7 +124,7 @@ class PlaywrightSession:
                 s("Nenhum modal encontrado.")
 
             s("Preenchendo credenciais…")
-            page.fill("input[type='email']", user)
+            page.fill("input[type='email']",    user)
             page.fill("input[type='password']", password)
             page.click("button[type='submit']")
 
@@ -81,44 +132,13 @@ class PlaywrightSession:
             page.wait_for_url(lambda url: "login" not in url, timeout=20000)
             s(f"Logado! URL: {page.url}")
 
-            s("Buscando anúncios…")
+            s("Carregando dashboard…")
             page.goto(DASHBOARD_URL, wait_until="networkidle")
-
-            ads_raw = page.evaluate("""() => {
-                const all = document.querySelectorAll('button.editButton');
-                const buttons = Array.from(all).filter(btn => btn.offsetParent !== null);
-                return buttons.map(btn => {
-                    const photoDiv = btn.closest('[class*="photo-edit"]') || btn.parentElement;
-                    const row = btn.closest('.row') || photoDiv?.parentElement;
-                    const img = photoDiv ? photoDiv.querySelector('img') : null;
-                    const rowText = row ? row.innerText : '';
-                    const nameMatch = rowText.match(/Name:\\s*([^\\n]+)/);
-                    let imgSrc = img ? img.src : '';
-                    if (imgSrc.startsWith('//')) imgSrc = 'https:' + imgSrc;
-                    return {
-                        escort_id: btn.dataset.escort || '',
-                        image_url: imgSrc,
-                        name: nameMatch ? nameMatch[1].trim() : (btn.dataset.escort || 'Anúncio'),
-                        edit_url: ''
-                    };
-                });
-            }""")
-
-            total = len(ads_raw)
-            for i, ad in enumerate(ads_raw):
-                try:
-                    s(f"Capturando URL do anúncio {i + 1}/{total}…")
-                    page.locator(f"button.editButton[data-escort='{ad['escort_id']}']").first.click()
-                    page.wait_for_load_state("networkidle", timeout=10000)
-                    ad["edit_url"] = page.url
-                    page.go_back()
-                    page.wait_for_load_state("networkidle", timeout=10000)
-                except Exception as e:
-                    print(f"{ts()} [WARN] URL não capturada para {ad['escort_id']}: {e}")
-                    ad["edit_url"] = ""
+            ads   = self._read_ads(page)
+            total = len(ads)
 
             if done_cb:
-                done_cb(True, f"Login OK! {total} anúncio(s) encontrado(s).", ads_raw)
+                done_cb(True, f"Login OK! {total} anúncio(s) encontrado(s).", ads)
 
             while True:
                 try:
@@ -129,9 +149,22 @@ class PlaywrightSession:
                 if cmd == self._CMD_STOP:
                     break
 
-                if cmd == self._CMD_UPDATE:
-                    edit_url, desc_fn, upd_status_cb, upd_done_cb = payload
-                    self._do_update(page, edit_url, desc_fn, upd_status_cb, upd_done_cb)
+                elif cmd == self._CMD_BOOST:
+                    escort_id, upd_status_cb, upd_done_cb = payload
+                    self._do_boost(page, escort_id, upd_status_cb, upd_done_cb)
+
+                elif cmd == self._CMD_REFRESH:
+                    refresh_done_cb = payload
+                    try:
+                        s("Atualizando dashboard…")
+                        page.goto(DASHBOARD_URL, wait_until="networkidle")
+                        ads = self._read_ads(page)
+                        if refresh_done_cb:
+                            refresh_done_cb(True, ads)
+                    except Exception as e:
+                        print(f"{ts()} [REFRESH] Erro: {e}", flush=True)
+                        if refresh_done_cb:
+                            refresh_done_cb(False, [])
 
         except Exception as e:
             traceback.print_exc()
@@ -146,66 +179,74 @@ class PlaywrightSession:
             except Exception:
                 pass
 
-    def _do_update(self, page, edit_url: str, description_fn, status_cb, done_cb):
+    def _read_ads(self, page) -> list[dict]:
+        return page.evaluate(_READ_ADS_JS)
+
+    def _do_boost(self, page, escort_id: str, status_cb, done_cb):
         def s(msg):
-            print(f"{ts()} [UPDATE] {msg}", flush=True)
+            print(f"{ts()} [BOOST:{escort_id}] {msg}", flush=True)
             if status_cb:
                 status_cb(msg)
 
         try:
-            s("Abrindo página de edição…")
-            page.goto(edit_url, wait_until="networkidle", timeout=30000)
-            print(f"{ts()} [UPDATE] URL após navegação: {page.url}")
+            if DASHBOARD_URL not in page.url:
+                s("Navegando ao dashboard…")
+                page.goto(DASHBOARD_URL, wait_until="networkidle")
 
-            if "login" in page.url:
+            s("Verificando disponibilidade do boost…")
+            in_cooldown = page.evaluate(f"""() => {{
+                const countdownSpan = document.querySelector(
+                    "span.boost-countdown[data-escort='{escort_id}']");
+                const countdown = countdownSpan ? countdownSpan.textContent.trim() : '';
+                const boostBtnOk = document.querySelector(
+                    "button.boostButton[data-escort='{escort_id}']:not([disabled])");
+                return (/\\d+:\\d+/.test(countdown)) || (!boostBtnOk);
+            }}""")
+
+            if in_cooldown:
                 if done_cb:
-                    done_cb(False, "❌ Sessão expirada. Refaça o login.")
+                    done_cb(False, "⏱️ Anúncio em cooldown — boost indisponível.", None)
                 return
 
-            s("Aguardando formulário…")
-            try:
-                page.wait_for_selector("#inputDescription", state="visible", timeout=15000)
-            except Exception:
-                debug_path = os.path.join(BASE_DIR, "debug_edit_page.html")
-                with open(debug_path, "w", encoding="utf-8") as f:
-                    f.write(page.content())
-                forms = page.evaluate(
-                    "Array.from(document.querySelectorAll('form')).map(f => f.id)"
-                )
-                print(f"{ts()} [UPDATE] Textarea não encontrada. Forms: {forms}. HTML → {debug_path}")
-                if done_cb:
-                    done_cb(False, f"❌ Formulário não encontrado. Forms: {forms}")
-                return
+            boost_btn = page.locator(
+                f"button.boostButton[data-escort='{escort_id}']"
+            ).first
 
-            s("Lendo descrição atual…")
-            current = page.evaluate("document.getElementById('inputDescription').value") or ""
-            print(f"{ts()} [UPDATE] Descrição atual: {len(current)} chars")
+            s("Clicando em Manual Boost…")
+            boost_btn.click()
 
-            new_desc = description_fn(current) if callable(description_fn) else description_fn
-            print(f"{ts()} [UPDATE] Nova descrição:  {len(new_desc)} chars")
+            s("Aguardando atualização da página…")
+            page.wait_for_timeout(3000)
 
-            if new_desc == current:
-                if done_cb:
-                    done_cb(False, "⚠️ Descrição idêntica à atual — nada a salvar.")
-                return
+            new_state = page.evaluate(f"""() => {{
+                const boostBtnOk  = document.querySelector(
+                    "button.boostButton[data-escort='{escort_id}']:not([disabled])");
+                const boostBtnAny = document.querySelector(
+                    "button.boostButton[data-escort='{escort_id}']");
+                const countdownSpan = document.querySelector(
+                    "span.boost-countdown[data-escort='{escort_id}']");
 
-            s("Preenchendo nova descrição…")
-            page.evaluate(
-                "(v) => { document.getElementById('inputDescription').value = v; }",
-                new_desc,
-            )
+                let usedToday = '0';
+                if (boostBtnAny) {{
+                    const section = boostBtnAny.closest('.manual-boost-col, .profile-boost');
+                    const el = section ? section.querySelector('.boost-used-today') : null;
+                    if (el) usedToday = el.textContent.trim();
+                }}
 
-            s("Clicando em Salvar…")
-            page.evaluate("document.getElementById('escortAdButton').click()")
+                const countdown  = countdownSpan ? countdownSpan.textContent.trim() : '';
+                const inCooldown = (/\\d+:\\d+/.test(countdown)) || (!boostBtnOk);
 
-            s("Aguardando confirmação…")
-            page.wait_for_timeout(4000)
-            print(f"{ts()} [UPDATE] URL após salvar: {page.url}")
+                return {{
+                    in_cooldown:   inCooldown,
+                    cooldown_time: countdown,
+                    used_today:    usedToday,
+                }};
+            }}""")
 
             if done_cb:
-                done_cb(True, "✅ Descrição atualizada com sucesso!")
+                done_cb(True, "✅ Boost realizado!", new_state)
 
         except Exception as e:
             traceback.print_exc()
             if done_cb:
-                done_cb(False, f"❌ Erro ao atualizar: {e}")
+                done_cb(False, f"❌ Erro ao fazer boost: {e}", None)

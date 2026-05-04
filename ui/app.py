@@ -5,7 +5,7 @@ from tkinter import ttk, messagebox
 from config import CONFIG_FILE
 from persistence import load_credentials, save_credentials
 from browser.session import PlaywrightSession
-from ui.ad_picker import AdPickerWindow
+from ui.boost_window import BoostWindow
 
 
 class KommonsApp(tk.Tk):
@@ -89,7 +89,7 @@ class KommonsApp(tk.Tk):
         if success:
             self._set_status(f"✅ {message}", "green")
             if ads:
-                AdPickerWindow(self, ads, self.pw_session)
+                BoostWindow(self, ads, self.pw_session)
             else:
                 self._set_status("✅ Login OK, mas nenhum anúncio encontrado.", "orange")
         else:
