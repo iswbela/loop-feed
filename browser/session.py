@@ -61,6 +61,7 @@ class PlaywrightSession:
     _CMD_BOOST   = "boost"
     _CMD_REFRESH = "refresh"
     _CMD_STOP    = "stop"
+    _CMD_UPDATE  = "update"
 
     def __init__(self):
         self._q      = queue.Queue()
@@ -82,6 +83,13 @@ class PlaywrightSession:
 
     def refresh(self, done_cb=None):
         self._q.put((self._CMD_REFRESH, done_cb))
+
+    def update(self, edit_url: str, fn_or_text, status_cb=None, done_cb=None):
+        """Atualiza a descrição de um anúncio.
+
+        fn_or_text: callable(desc_atual) -> nova_desc, ou str para substituição direta.
+        """
+        self._q.put((self._CMD_UPDATE, (edit_url, fn_or_text, status_cb, done_cb)))
 
     def stop(self):
         self._q.put((self._CMD_STOP, None))
@@ -166,6 +174,10 @@ class PlaywrightSession:
                         if refresh_done_cb:
                             refresh_done_cb(False, [])
 
+                elif cmd == self._CMD_UPDATE:
+                    edit_url, fn_or_text, upd_status_cb, upd_done_cb = payload
+                    self._do_update(context, edit_url, fn_or_text, upd_status_cb, upd_done_cb)
+
         except Exception as e:
             traceback.print_exc()
             if done_cb:
@@ -181,6 +193,51 @@ class PlaywrightSession:
 
     def _read_ads(self, page) -> list[dict]:
         return page.evaluate(_READ_ADS_JS)
+
+    def _do_update(self, context, edit_url: str, fn_or_text, status_cb, done_cb):
+        """Abre uma nova aba, edita a descrição do anúncio e fecha a aba."""
+        def s(msg):
+            print(f"{ts()} [UPDATE] {msg}", flush=True)
+            if status_cb:
+                status_cb(msg)
+
+        new_page = None
+        try:
+            s("Abrindo página do anúncio…")
+            new_page = context.new_page()
+            new_page.goto(edit_url, wait_until="networkidle")
+
+            # Lê a descrição atual
+            current_desc = new_page.evaluate("""() => {
+                const ta = document.querySelector('textarea[name="description"]');
+                if (ta) return ta.value;
+                const inp = document.querySelector('input[name="description"]');
+                return inp ? inp.value : '';
+            }""")
+
+            # Calcula a nova descrição
+            new_desc = fn_or_text(current_desc) if callable(fn_or_text) else fn_or_text
+
+            s("Preenchendo nova descrição…")
+            new_page.fill('textarea[name="description"]', new_desc)
+
+            s("Salvando…")
+            new_page.click('button[type="submit"]')
+            new_page.wait_for_timeout(2000)
+
+            if done_cb:
+                done_cb(True, "✅ Descrição atualizada com sucesso!")
+
+        except Exception as e:
+            traceback.print_exc()
+            if done_cb:
+                done_cb(False, f"❌ Erro ao atualizar: {e}")
+        finally:
+            if new_page:
+                try:
+                    new_page.close()
+                except Exception:
+                    pass
 
     def _do_boost(self, page, escort_id: str, status_cb, done_cb):
         def s(msg):
