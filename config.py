@@ -12,9 +12,12 @@ BASE_URL = "https://kommons.com"
 LOGIN_URL = f"{BASE_URL}/members-area/login"
 DASHBOARD_URL = f"{BASE_URL}/members-area"
 
-# --- VivaStreet (preparação futura) ---
-VIVASTREET_BASE_URL = "https://www.vivastreet.com"
-VIVASTREET_LOGIN_URL = f"{VIVASTREET_BASE_URL}/login"
+# --- VivaStreet ---
+VIVASTREET_BASE_URL      = "https://www.vivastreet.co.uk"
+VIVASTREET_LOGIN_URL     = f"{VIVASTREET_BASE_URL}/user/login"     # URL real da página de login
+VIVASTREET_API_BASE_URL  = f"{VIVASTREET_BASE_URL}/api/v1"
+VIVASTREET_API_LOGIN_URL = f"{VIVASTREET_API_BASE_URL}/auth/user/login"
+VIVASTREET_API_REFRESH_URL = f"{VIVASTREET_API_BASE_URL}/auth/user/refresh"
 
 APP_VERSION = "1.1.0"
 

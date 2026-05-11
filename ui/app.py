@@ -22,11 +22,12 @@ from tkinter import ttk, messagebox
 import requests
 from PIL import Image, ImageTk
 
-from accounts import AccountManager, ACCOUNT_TYPE_KOMMONS
+from accounts import AccountManager, ACCOUNT_TYPE_KOMMONS, ACCOUNT_TYPE_VIVASTREET
 from browser.session import PlaywrightSession
 from config import APP_VERSION
 from ui.accounts_modal import AccountsModal
 from ui.edit_window import EditWindow
+from vivastreet.auth import bootstrap_vivastreet_accounts
 
 
 # ---------------------------------------------------------------------------
@@ -67,6 +68,11 @@ class KommonsApp(tk.Tk):
         self._ads: list[dict] = []
         self._widgets: dict[str, dict] = {}
         self._boost_queue: list[str] = []
+
+        # Contadores do bootstrap VivaStreet (reset em cada ciclo de boot)
+        self._vs_ok:      int = 0
+        self._vs_fail:    int = 0
+        self._vs_total:   int = 0
 
         self._build_ui()
         self.after(120, self._boot)
@@ -215,6 +221,8 @@ class KommonsApp(tk.Tk):
             self._ads = ads or []
             self._widgets.clear()
             self._render_ads()
+            # Autentica contas VivaStreet em paralelo (não bloqueia a UI)
+            self._boot_vivastreet_accounts()
         else:
             self._set_auth_status(
                 '❌  Falha na autenticação. Verifique suas contas em "⚙️ Gerenciar Contas".',
@@ -222,6 +230,77 @@ class KommonsApp(tk.Tk):
             )
             self._show_center("Não foi possível autenticar.")
             self._set_status(f"❌ {message}", "red")
+
+    # ------------------------------------------------------------------
+    # Bootstrap VivaStreet (chamado após login Kommons bem-sucedido)
+    # ------------------------------------------------------------------
+
+    def _boot_vivastreet_accounts(self):
+        """Autentica todas as contas VivaStreet salvas em paralelo."""
+        accounts = self._manager.list_by_type(ACCOUNT_TYPE_VIVASTREET)
+        if not accounts:
+            return
+
+        self._vs_total = len(accounts)
+        self._vs_ok    = 0
+        self._vs_fail  = 0
+
+        # Atualiza barra de auth indicando que o VS está sendo autenticado
+        self._update_auth_status_bar()
+
+        def status_cb(msg: str) -> None:
+            # Mensagens de progresso do VivaStreet vão para o rodapé de status
+            self.after(0, lambda: self._set_status(f"VivaStreet: {msg}", "gray"))
+
+        def done_cb(n_ok: int, n_fail: int) -> None:
+            self.after(0, self._on_vs_bootstrap_done, n_ok, n_fail)
+
+        bootstrap_vivastreet_accounts(
+            accounts,
+            status_cb=status_cb,
+            done_cb=done_cb,
+        )
+
+    def _on_vs_bootstrap_done(self, n_ok: int, n_fail: int) -> None:
+        """Chamado na thread da UI quando todas as contas VS terminaram de autenticar."""
+        self._vs_ok   = n_ok
+        self._vs_fail = n_fail
+        self._update_auth_status_bar()
+
+        if n_fail == 0:
+            self._set_status(
+                f"✅ VivaStreet: {n_ok} conta(s) autenticada(s).", "green"
+            )
+        else:
+            self._set_status(
+                f"⚠️  VivaStreet: {n_ok} OK, {n_fail} falha(s). "
+                'Verifique em "⚙️ Gerenciar Contas".',
+                "orange",
+            )
+
+    def _update_auth_status_bar(self) -> None:
+        """Recompõe o texto da barra de auth com o estado atual de Kommons + VivaStreet."""
+        kommons_part = "✅  Kommons: conectado"
+
+        if self._vs_total == 0:
+            self._set_auth_status(kommons_part, kind="ok")
+            return
+
+        # Bootstrap em andamento
+        done = self._vs_ok + self._vs_fail
+        if done < self._vs_total:
+            vs_part = f"⏳  VivaStreet: autenticando ({done}/{self._vs_total})…"
+            self._set_auth_status(f"{kommons_part}   |   {vs_part}", kind="warn")
+            return
+
+        # Bootstrap concluído
+        if self._vs_fail == 0:
+            vs_part = f"✅  VivaStreet: {self._vs_ok} conta(s)"
+        else:
+            vs_part = f"⚠️  VivaStreet: {self._vs_ok} OK / {self._vs_fail} falha(s)"
+
+        kind = "ok" if self._vs_fail == 0 else "warn"
+        self._set_auth_status(f"{kommons_part}   |   {vs_part}", kind=kind)
 
     # ------------------------------------------------------------------
     # Renderização dos anúncios
