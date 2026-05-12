@@ -58,6 +58,69 @@ _RESPONSE_MAX_S     = 300     # tempo máximo aguardando login manual (5 minutos
 _PROFILES_DIR = os.path.join(BASE_DIR, "vivastreet_profiles")
 
 
+def _find_opera_profile() -> Optional[str]:
+    """
+    Retorna o diretório de perfil do Opera instalado no sistema, ou None.
+    O perfil contém cookies (incl. cf_clearance) e localStorage com sessões ativas.
+    """
+    appdata = os.environ.get("APPDATA", "")
+    candidates = [
+        os.path.join(appdata, "Opera Software", "Opera Stable"),
+        os.path.join(appdata, "Opera Software", "Opera GX Stable"),
+        os.path.join(appdata, "Opera Software", "Opera Next"),
+    ]
+    for path in candidates:
+        if os.path.isdir(path):
+            return path
+    return None
+
+
+def _sync_opera_to_profile(opera_root: str, dst_root: str) -> None:
+    """
+    Copia os dados essenciais do perfil do Opera para o perfil Playwright.
+
+    O que é copiado:
+      - Local State      — chave de descriptografia de cookies (DPAPI, Windows)
+      - Default/Network/Cookies  — banco SQLite com todos os cookies (incl. cf_clearance)
+      - Default/Local Storage/leveldb/ — localStorage (sessão VivaStreet salva pelo pinia)
+
+    A cópia é tolerante a falhas: ignora arquivos bloqueados pelo Opera em execução.
+    Usar uma cópia (não o perfil original) evita conflito de lock com o Opera aberto.
+    """
+    import shutil
+
+    files_to_copy = [
+        # (relativo ao opera_root, relativo ao dst_root)
+        ("Local State",                                         "Local State"),
+        (os.path.join("Default", "Network", "Cookies"),        os.path.join("Default", "Network", "Cookies")),
+        (os.path.join("Default", "Cookies"),                   os.path.join("Default", "Cookies")),          # fallback path
+        (os.path.join("Network",  "Cookies"),                  os.path.join("Network",  "Cookies")),          # alt path
+    ]
+    dirs_to_copy = [
+        (os.path.join("Default", "Local Storage", "leveldb"),
+         os.path.join("Default", "Local Storage", "leveldb")),
+    ]
+
+    for src_rel, dst_rel in files_to_copy:
+        src = os.path.join(opera_root, src_rel)
+        dst = os.path.join(dst_root, dst_rel)
+        if os.path.isfile(src):
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            try:
+                shutil.copy2(src, dst)
+            except Exception:
+                pass  # arquivo pode estar em uso — continua
+
+    for src_rel, dst_rel in dirs_to_copy:
+        src = os.path.join(opera_root, src_rel)
+        dst = os.path.join(dst_root, dst_rel)
+        if os.path.isdir(src):
+            try:
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            except Exception:
+                pass
+
+
 def _find_browser_exe() -> Optional[str]:
     """
     Encontra o executável de um navegador baseado em Chromium instalado no sistema.
@@ -263,6 +326,17 @@ class VivaStreetAuth:
         profile_path = os.path.join(_PROFILES_DIR, self.account_id)
         os.makedirs(profile_path, exist_ok=True)
 
+        # ── Importa cookies + localStorage do Opera para o nosso perfil ──
+        # Isso garante que o Cloudflare reconheça o browser como legítimo
+        # (o cf_clearance do Opera já foi validado pelo uso diário do usuário)
+        opera_profile = _find_opera_profile()
+        if opera_profile:
+            s("Importando sessão do Opera (cookies, cf_clearance)…")
+            _sync_opera_to_profile(opera_profile, profile_path)
+            s("Sessão importada.")
+        else:
+            s("Perfil do Opera não encontrado — usando perfil salvo.")
+
         # Detecta o navegador real instalado (Opera, Edge, Chrome…)
         browser_exe = _find_browser_exe()
         browser_name = (
@@ -272,7 +346,7 @@ class VivaStreetAuth:
 
         pw = context = None
         try:
-            s(f"Abrindo {browser_name} com perfil salvo…")
+            s(f"Abrindo {browser_name} com sessão do Opera…")
             pw = sync_playwright().start()
 
             # Quando usar o browser real do usuário não sobrescrevemos o user-agent —
