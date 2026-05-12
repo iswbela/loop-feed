@@ -2,20 +2,24 @@
 vivastreet/auth.py — Serviço de autenticação da API VivaStreet.
 
 Responsabilidades:
-  - Login via Playwright headless (necessário para resolver o Cloudflare Turnstile)
+  - Login via browser real (necessário para resolver o Cloudflare Turnstile)
   - Verificação de expiração do JWT (sem biblioteca externa)
   - Refresh automático de access_token via HTTP direto (não precisa de Turnstile)
   - Re-login automático quando o refresh_token expira
   - Persistência segura de tokens via vivastreet/tokens.py
   - Bootstrap de múltiplas contas em paralelo no startup do app
 
-Por que Playwright?
+Estratégia anti-Cloudflare:
   O endpoint POST /api/v1/auth/user/login exige um "turnstile_token" válido
-  (Cloudflare Turnstile). Esse token é gerado por um widget JavaScript que
-  detecta automação e bloqueia requests diretas. A solução é usar um browser
-  headless real (Playwright/Chromium) para abrir a página de login, preencher
-  as credenciais e deixar o widget resolver-se automaticamente. A resposta da
-  API é capturada via interceptação de rede.
+  (Cloudflare Turnstile) gerado por um widget JavaScript que detecta automação.
+  Além disso, a Cloudflare emite um cookie cf_clearance amarrado ao fingerprint
+  TLS/JA3 do navegador — se o app trocar de binário, o cookie é invalidado.
+
+  Por isso, a abertura do navegador é delegada a `browser.launcher.launch_browser`,
+  que tenta primeiro lançar o Edge/Chrome real do sistema via CDP, e cai para
+  o Chromium bundled do Playwright como fallback. Em ambos os casos é usado um
+  perfil dedicado em config.PROFILES_DIR/<account_id>/ — os cookies (incluindo
+  cf_clearance) e o localStorage sobrevivem entre execuções.
 
   O refresh_token não passa pelo Turnstile → usa HTTP direto (requests.Session).
 
@@ -34,6 +38,7 @@ from typing import Callable, Optional
 
 import requests
 
+from browser.launcher import launch_browser
 from config import (
     VIVASTREET_LOGIN_URL,
     VIVASTREET_API_LOGIN_URL,
@@ -54,119 +59,6 @@ _LOGIN_TIMEOUT_MS   = 30_000  # timeout de navegação Playwright (ms)
 _RESPONSE_POLL_S    = 1.0     # intervalo de polling para resposta da API
 _RESPONSE_MAX_S     = 300     # tempo máximo aguardando login manual (5 minutos)
 
-# Perfis de browser persistidos por conta (cookies + localStorage entre sessões)
-_PROFILES_DIR = os.path.join(BASE_DIR, "vivastreet_profiles")
-
-
-def _find_opera_profile() -> Optional[str]:
-    """
-    Retorna o diretório de perfil do Opera instalado no sistema, ou None.
-    O perfil contém cookies (incl. cf_clearance) e localStorage com sessões ativas.
-    """
-    appdata = os.environ.get("APPDATA", "")
-    candidates = [
-        os.path.join(appdata, "Opera Software", "Opera Stable"),
-        os.path.join(appdata, "Opera Software", "Opera GX Stable"),
-        os.path.join(appdata, "Opera Software", "Opera Next"),
-    ]
-    for path in candidates:
-        if os.path.isdir(path):
-            return path
-    return None
-
-
-def _sync_opera_to_profile(opera_root: str, dst_root: str) -> None:
-    """
-    Copia os dados essenciais do perfil do Opera para o perfil Playwright.
-
-    O que é copiado:
-      - Local State      — chave de descriptografia de cookies (DPAPI, Windows)
-      - Default/Network/Cookies  — banco SQLite com todos os cookies (incl. cf_clearance)
-      - Default/Local Storage/leveldb/ — localStorage (sessão VivaStreet salva pelo pinia)
-
-    A cópia é tolerante a falhas: ignora arquivos bloqueados pelo Opera em execução.
-    Usar uma cópia (não o perfil original) evita conflito de lock com o Opera aberto.
-    """
-    import shutil
-
-    files_to_copy = [
-        # (relativo ao opera_root, relativo ao dst_root)
-        ("Local State",                                         "Local State"),
-        (os.path.join("Default", "Network", "Cookies"),        os.path.join("Default", "Network", "Cookies")),
-        (os.path.join("Default", "Cookies"),                   os.path.join("Default", "Cookies")),          # fallback path
-        (os.path.join("Network",  "Cookies"),                  os.path.join("Network",  "Cookies")),          # alt path
-    ]
-    dirs_to_copy = [
-        (os.path.join("Default", "Local Storage", "leveldb"),
-         os.path.join("Default", "Local Storage", "leveldb")),
-    ]
-
-    for src_rel, dst_rel in files_to_copy:
-        src = os.path.join(opera_root, src_rel)
-        dst = os.path.join(dst_root, dst_rel)
-        if os.path.isfile(src):
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            try:
-                shutil.copy2(src, dst)
-            except Exception:
-                pass  # arquivo pode estar em uso — continua
-
-    for src_rel, dst_rel in dirs_to_copy:
-        src = os.path.join(opera_root, src_rel)
-        dst = os.path.join(dst_root, dst_rel)
-        if os.path.isdir(src):
-            try:
-                shutil.copytree(src, dst, dirs_exist_ok=True)
-            except Exception:
-                pass
-
-
-def _find_browser_exe() -> Optional[str]:
-    """
-    Encontra o executável de um navegador baseado em Chromium instalado no sistema.
-
-    Ordem de preferência: Opera > Opera GX > Edge > Chrome > (None = Chromium do Playwright).
-
-    Opera costuma instalar numa subpasta versionada (ex: Opera/90.0.4480.84/opera.exe),
-    por isso a busca usa glob recursivo nas pastas conhecidas do Opera.
-    """
-    import glob
-
-    local   = os.environ.get("LOCALAPPDATA", "")
-    prog    = os.environ.get("PROGRAMFILES", "C:\\Program Files")
-    prog86  = os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)")
-
-    # ── Opera: busca recursiva (instalação versionada) ──────────────────
-    opera_dirs = [
-        os.path.join(local,  "Programs", "Opera"),
-        os.path.join(local,  "Programs", "Opera GX"),
-        os.path.join(prog,   "Opera"),
-        os.path.join(prog86, "Opera"),
-    ]
-    for folder in opera_dirs:
-        if os.path.isdir(folder):
-            # Procura opera.exe em qualquer subpasta (ex: versão numérica)
-            hits = glob.glob(os.path.join(folder, "**", "opera.exe"), recursive=True)
-            # Exclui installers/uninstallers — pega só o binário principal
-            hits = [h for h in hits if "installer" not in h.lower()]
-            if hits:
-                # Se houver múltiplas versões, pega a mais recente (maior caminho numérico)
-                hits.sort(reverse=True)
-                return hits[0]
-
-    # ── Fallbacks: Edge → Chrome ─────────────────────────────────────────
-    direct_candidates = [
-        os.path.join(prog86, "Microsoft", "Edge", "Application", "msedge.exe"),
-        os.path.join(prog,   "Microsoft", "Edge", "Application", "msedge.exe"),
-        os.path.join(local,  "Google", "Chrome", "Application", "chrome.exe"),
-        os.path.join(prog,   "Google", "Chrome", "Application", "chrome.exe"),
-        os.path.join(prog86, "Google", "Chrome", "Application", "chrome.exe"),
-    ]
-    for path in direct_candidates:
-        if path and os.path.isfile(path):
-            return path
-
-    return None  # Playwright usa seu Chromium bundled
 
 _REFRESH_HEADERS = {
     "Content-Type":    "application/json",
@@ -176,12 +68,6 @@ _REFRESH_HEADERS = {
     "User-Agent":      USER_AGENT,
     "Accept-Language": "en-GB,en;q=0.9",
 }
-
-# Script injetado antes do carregamento da página para remover sinais de automação
-_STEALTH_JS = """
-    Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-    window.chrome = { runtime: {} };
-"""
 
 
 # ---------------------------------------------------------------------------
@@ -299,87 +185,64 @@ class VivaStreetAuth:
         done_cb,
     ) -> None:
         """
-        Abre um browser com perfil PERSISTIDO por conta (cookies + localStorage
-        sobrevivem entre sessões).
+        Abre um navegador com perfil PERSISTIDO por conta usando a estratégia
+        híbrida (CDP no navegador real → fallback persistent context).
+
+        Por que essa abordagem funciona melhor contra a Cloudflare:
+
+          * O perfil em PROFILES_DIR/<account_id>/ é exclusivo desta conta e
+            sobrevive entre execuções, então o cookie `cf_clearance` salvo
+            após a primeira validação manual continua válido para próximas
+            sessões — desde que o navegador binário continue o mesmo.
+          * Quando o launcher consegue conectar via CDP a um Edge/Chrome real
+            instalado, o fingerprint TLS/JA3 e o User-Agent são idênticos ao
+            de um navegador legítimo, o que é justamente o que a Cloudflare
+            valida ao emitir o cf_clearance.
+          * O script de stealth (browser/stealth.py) cuida das discrepâncias
+            de fingerprint para o caso em que precisamos cair no Chromium
+            bundled do Playwright.
 
         Fluxo:
-          1. Abre com o perfil salvo em vivastreet_profiles/{account_id}/
-          2. Tenta extrair tokens do localStorage (sessão já ativa da última vez)
-          3. Se não há tokens válidos, navega para o login:
-             - Pré-preenche email e senha
-             - Aguarda até 5 min para o usuário resolver CF challenge e fazer login
-             - Intercepta a resposta da API para capturar os tokens
-          4. Salva tokens em vivastreet_tokens.json e fecha o browser
-
-        Com perfil persistido:
-          - 1ª vez: CF challenge aparece → usuário resolve uma vez → perfil salvo
-          - Próximas vezes: CF clearance cookie válido → sem challenge
-          - Sessão VivaStreet salva no localStorage → pode nem precisar de login
+          1. Lança o navegador via launch_browser() — perfil dedicado.
+          2. Navega para /user/account/ads para reaproveitar sessão salva.
+          3. Se sessão válida, extrai tokens do localStorage e retorna.
+          4. Caso contrário, vai para /user/login, pré-preenche credenciais,
+             espera até 5 min o usuário resolver Turnstile e completar login.
+          5. Captura tokens via response interception ou polling do localStorage.
+          6. Persiste tokens e encerra o browser (perfil fica salvo).
         """
-        from playwright.sync_api import sync_playwright
 
         def s(msg: str) -> None:
             self._log("LOGIN", msg)
             if status_cb:
                 status_cb(msg)
 
-        profile_path = os.path.join(_PROFILES_DIR, self.account_id)
-        os.makedirs(profile_path, exist_ok=True)
-
-        # ── Importa cookies + localStorage do Opera para o nosso perfil ──
-        # Isso garante que o Cloudflare reconheça o browser como legítimo
-        # (o cf_clearance do Opera já foi validado pelo uso diário do usuário)
-        opera_profile = _find_opera_profile()
-        if opera_profile:
-            s("Importando sessão do Opera (cookies, cf_clearance)…")
-            _sync_opera_to_profile(opera_profile, profile_path)
-            s("Sessão importada.")
-        else:
-            s("Perfil do Opera não encontrado — usando perfil salvo.")
-
-        # Detecta o navegador real instalado (Opera, Edge, Chrome…)
-        browser_exe = _find_browser_exe()
-        browser_name = (
-            os.path.splitext(os.path.basename(browser_exe))[0].title()
-            if browser_exe else "Chromium"
-        )
-
-        pw = context = None
+        launch_result = None
         try:
-            s(f"Abrindo {browser_name} com sessão do Opera…")
-            pw = sync_playwright().start()
-
-            # Quando usar o browser real do usuário não sobrescrevemos o user-agent —
-            # o UA nativo do Opera/Edge/Chrome é reconhecido pelo Cloudflare como
-            # um navegador legítimo.  Só definimos UA explícito para o Chromium bundled.
-            launch_kwargs: dict = dict(
-                user_data_dir=profile_path,
-                executable_path=browser_exe,   # None → Chromium bundled do Playwright
+            launch_result = launch_browser(
+                account_id=self.account_id,
                 headless=False,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
-                viewport={"width": 1024, "height": 768},
-                locale="en-GB",
-                extra_http_headers={"Accept-Language": "en-GB,en;q=0.9"},
+                log=lambda m: s(m),
             )
-            if browser_exe is None:
-                # Somente para Chromium bundled: define UA para evitar fingerprint óbvio
-                launch_kwargs["user_agent"] = USER_AGENT
+            context = launch_result.context
+            s(f"Sessão iniciada (mode={launch_result.mode}, browser={launch_result.browser_name}).")
 
-            context = pw.chromium.launch_persistent_context(**launch_kwargs)
-            context.add_init_script(_STEALTH_JS)
-            page = context.new_page()
+            # Reaproveita a primeira página existente quando vier do CDP
+            # (o Edge/Chrome real já abre com uma aba inicial), senão cria.
+            existing_pages = context.pages
+            page = existing_pages[0] if existing_pages else context.new_page()
 
             # ── Intercepta qualquer resposta do endpoint de login ─────
             captured: dict = {}
 
             def on_response(response):
-                if VIVASTREET_API_LOGIN_URL in response.url and response.status == 200:
-                    try:
+                try:
+                    if VIVASTREET_API_LOGIN_URL in response.url and response.status == 200:
                         data = response.json()
                         if data.get("access_token"):
                             captured.update(data)
-                    except Exception:
-                        pass
+                except Exception:
+                    pass
 
             page.on("response", on_response)
 
@@ -477,13 +340,11 @@ class VivaStreetAuth:
                 done_cb(False, f"Erro durante login VivaStreet: {exc}", {})
 
         finally:
-            try:
-                if context:
-                    context.close()
-                if pw:
-                    pw.stop()
-            except Exception:
-                pass
+            if launch_result is not None:
+                try:
+                    launch_result.close_all()
+                except Exception:
+                    pass
 
     def _extract_tokens_from_page(self, page) -> Optional[dict]:
         """
