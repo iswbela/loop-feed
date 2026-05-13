@@ -1,4 +1,5 @@
 requests
+curl_cffi
 Pillow
 selenium
 webdriver-manager

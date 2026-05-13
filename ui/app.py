@@ -28,6 +28,7 @@ from config import APP_VERSION
 from ui.accounts_modal import AccountsModal
 from ui.edit_window import EditWindow
 from vivastreet.auth import bootstrap_vivastreet_accounts
+from vivastreet.ads import load_vs_ads, toggle_heart_description
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +69,7 @@ class KommonsApp(tk.Tk):
         self._ads: list[dict] = []
         self._widgets: dict[str, dict] = {}
         self._boost_queue: list[str] = []
+        self._vs_ads: list[dict] = []   # anúncios VivaStreet carregados
 
         # Contadores do bootstrap VivaStreet (reset em cada ciclo de boot)
         self._vs_ok:      int = 0
@@ -278,6 +280,89 @@ class KommonsApp(tk.Tk):
                 "orange",
             )
 
+        # Carrega anúncios VivaStreet na home (sem editar nada)
+        if n_ok > 0:
+            self._load_vs_ads()
+
+    def _load_vs_ads(self) -> None:
+        """
+        Solicita a lista de anúncios de cada conta VivaStreet autenticada.
+        Apenas carrega e exibe — nenhuma edição é feita aqui.
+        """
+        accounts = self._manager.list_by_type(ACCOUNT_TYPE_VIVASTREET)
+        if not accounts:
+            return
+
+        self._set_status("VivaStreet: carregando anúncios…", "gray")
+
+        for acc in accounts:
+            def status_cb(msg: str, _acc=acc) -> None:
+                self.after(
+                    0,
+                    lambda m=msg, a=_acc: self._set_status(
+                        f"VS ({a.username[:20]}): {m}", "gray"
+                    ),
+                )
+
+            def done_cb(
+                success: bool,
+                message: str,
+                ads: list,
+                _acc=acc,
+            ) -> None:
+                self.after(
+                    0,
+                    lambda s=success, m=message, r=ads, a=_acc:
+                        self._on_vs_ads_loaded(s, m, r, a),
+                )
+
+            load_vs_ads(
+                acc.id,
+                status_cb=status_cb,
+                done_cb=done_cb,
+            )
+
+    def _on_vs_ads_loaded(
+        self, success: bool, message: str, ads: list, acc
+    ) -> None:
+        """Adiciona anúncios VivaStreet carregados à listagem com suas imagens."""
+        color = "green" if success else "orange"
+        self._set_status(f"VS ({acc.username[:20]}): {message}", color)
+
+        if not ads:
+            return
+
+        for r in ads:
+            ad_id = r.get("ad_id", "")
+            if not ad_id:
+                continue
+            widget_key = f"vs_{ad_id}"
+            if widget_key in self._widgets:
+                continue
+            vs_ad = {
+                "source":        "vivastreet",
+                "account_id":    acc.id,
+                "escort_id":     widget_key,
+                "ad_id":         ad_id,
+                "name":          r.get("title", f"Anúncio {ad_id}"),
+                "edit_url":      r.get("edit_url", ""),
+                "image_url":     r.get("image_url", ""),
+                "in_cooldown":   False,
+                "cooldown_time": "",
+                "used_today":    "0",
+            }
+            self._vs_ads.append(vs_ad)
+            self._add_ad_row(vs_ad)
+            # Carrega a thumbnail se disponível
+            if vs_ad["image_url"]:
+                w = self._widgets.get(widget_key)
+                if w:
+                    threading.Thread(
+                        target=self._fetch_img,
+                        args=(vs_ad["image_url"], w["img_label"]),
+                        daemon=True,
+                    ).start()
+
     def _update_auth_status_bar(self) -> None:
         """Recompõe o texto da barra de auth com o estado atual de Kommons + VivaStreet."""
         kommons_part = "✅  Kommons: conectado"
@@ -309,8 +394,11 @@ class KommonsApp(tk.Tk):
     def _render_ads(self):
         for w in self._inner.winfo_children():
             w.destroy()
+        self._widgets.clear()
 
-        if not self._ads:
+        all_ads = self._ads + self._vs_ads
+
+        if not all_ads:
             tk.Label(
                 self._inner,
                 text="Nenhum anúncio encontrado nesta conta.",
@@ -319,57 +407,85 @@ class KommonsApp(tk.Tk):
             ).pack()
             return
 
-        for ad in self._ads:
+        for ad in all_ads:
             self._add_ad_row(ad)
 
         self._load_all_images()
 
     def _add_ad_row(self, ad: dict):
-        escort_id = ad.get("escort_id", "")
+        escort_id  = ad.get("escort_id", "")
+        is_vs      = ad.get("source") == "vivastreet"
 
         row = tk.Frame(self._inner, relief="groove", bd=1, padx=8, pady=8)
         row.pack(fill="x", padx=6, pady=4)
 
-        # Thumbnail
-        lbl_img = tk.Label(row, width=64, height=64, bg="#e8e8e8", text="…")
+        # Thumbnail — placeholder sempre em pixels (evita redimensionamento por caracteres)
+        _ph = ImageTk.PhotoImage(Image.new("RGB", (64, 64), "#e8e8e8"))
+        lbl_img = tk.Label(row, image=_ph, bg="#e8e8e8", text="")
+        lbl_img._photo = _ph   # evita garbage collection
         lbl_img.pack(side="left", padx=(0, 12))
 
         # Info textual
         info = tk.Frame(row)
         info.pack(side="left", fill="x", expand=True)
 
+        # Nome + badge da plataforma
+        name_frame = tk.Frame(info)
+        name_frame.pack(fill="x")
+
         tk.Label(
-            info,
+            name_frame,
             text=ad.get("name", "—"),
             font=("Helvetica", 10, "bold"),
             anchor="w",
-        ).pack(fill="x")
+        ).pack(side="left")
+
+        if is_vs:
+            tk.Label(
+                name_frame,
+                text="  VivaStreet",
+                font=("Helvetica", 7, "bold"),
+                fg="#ffffff",
+                bg="#e65c00",
+                padx=4,
+                pady=1,
+            ).pack(side="left", padx=(6, 0))
 
         tk.Label(
             info,
-            text=f"ID: {escort_id}",
+            text=f"ID: {ad.get('ad_id', escort_id)}",
             font=("Helvetica", 8),
             fg="gray",
             anchor="w",
         ).pack(fill="x")
 
-        lbl_cooldown = tk.Label(info, text="", font=("Helvetica", 8), anchor="w")
+        lbl_cooldown = tk.Label(info, text="Disponível", font=("Helvetica", 8),
+                                fg="#1a7f1a", anchor="w")
         lbl_cooldown.pack(fill="x")
 
         # Botões de ação
         btn_col = tk.Frame(row)
         btn_col.pack(side="right", padx=(12, 0))
 
-        btn_boost = ttk.Button(
-            btn_col, text="⚡  Boost", width=12,
-            command=lambda eid=escort_id: self._on_boost(eid),
-        )
+        if is_vs:
+            btn_boost = ttk.Button(
+                btn_col, text="❤️  Boost", width=12,
+                command=lambda eid=escort_id: self._on_vs_boost(eid),
+            )
+        else:
+            btn_boost = ttk.Button(
+                btn_col, text="⚡  Boost", width=12,
+                command=lambda eid=escort_id: self._on_boost(eid),
+            )
         btn_boost.pack(pady=(0, 4))
 
-        ttk.Button(
+        edit_btn = ttk.Button(
             btn_col, text="✏️  Editar", width=12,
             command=lambda a=ad: EditWindow(self, a, self.pw_session),
-        ).pack()
+        )
+        if is_vs:
+            edit_btn.config(state="disabled")
+        edit_btn.pack()
 
         self._widgets[escort_id] = {
             "img_label":      lbl_img,
@@ -426,7 +542,7 @@ class KommonsApp(tk.Tk):
             self.after(
                 0,
                 lambda lbl=label, p=photo: lbl.config(
-                    image=p, width=64, height=64, bg="white", text=""
+                    image=p, bg="white", text=""
                 ),
             )
         except Exception:
@@ -459,6 +575,38 @@ class KommonsApp(tk.Tk):
             self.after(0, update)
 
         self.pw_session.boost(escort_id, status_cb=status_cb, done_cb=done_cb)
+
+    def _on_vs_boost(self, escort_id: str):
+        """Boost de anúncio VivaStreet: toggle de ❤️ no final da descrição."""
+        w = self._widgets.get(escort_id)
+        if not w:
+            return
+
+        ad = w["ad"]
+        w["boost_btn"].config(state="disabled")
+        w["cooldown_label"].config(text="Editando descrição…", fg="gray")
+        self._set_status(f"VS: editando descrição do anúncio {ad.get('ad_id', '')}…", "gray")
+
+        def status_cb(msg: str):
+            self.after(0, lambda: self._set_status(f"VS: {msg}", "gray"))
+
+        def done_cb(success: bool, message: str):
+            def update():
+                w["boost_btn"].config(state="normal")
+                w["cooldown_label"].config(
+                    text="✅ Descrição atualizada" if success else "❌ Falha",
+                    fg="#1a7f1a" if success else "#c62828",
+                )
+                self._set_status(f"VS: {message}", "green" if success else "red")
+            self.after(0, update)
+
+        toggle_heart_description(
+            account_id=ad["account_id"],
+            ad_id=ad["ad_id"],
+            edit_url=ad["edit_url"],
+            status_cb=status_cb,
+            done_cb=done_cb,
+        )
 
     def _on_boost_all(self):
         available = [

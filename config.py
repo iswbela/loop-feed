@@ -19,6 +19,12 @@ VIVASTREET_API_BASE_URL  = f"{VIVASTREET_BASE_URL}/api/v1"
 VIVASTREET_API_LOGIN_URL = f"{VIVASTREET_API_BASE_URL}/auth/user/login"
 VIVASTREET_API_REFRESH_URL = f"{VIVASTREET_API_BASE_URL}/auth/user/refresh"
 
+# Porta CDP usada para conectar a um navegador (Opera/Edge/Chrome) já em execução.
+# Para usar: inicie o navegador com --remote-debugging-port=9222 antes de abrir o app.
+# Se a porta não estiver aberta, o app cai no comportamento antigo (abre uma janela própria).
+VIVASTREET_CDP_PORT = 9222
+VIVASTREET_CDP_URL  = f"http://127.0.0.1:{VIVASTREET_CDP_PORT}"
+
 APP_VERSION = "1.1.0"
 
 HEART = "❤️"

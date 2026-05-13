@@ -104,7 +104,7 @@ class PlaywrightSession:
         try:
             pw      = sync_playwright().start()
             browser = pw.chromium.launch(headless=True)
-            context = browser.new_context(user_agent=USER_AGENT)
+            context = browser.new_context(user_agent=USER_AGENT, ignore_https_errors=True)
             page    = context.new_page()
 
             page.on("dialog", lambda d: (
@@ -113,7 +113,7 @@ class PlaywrightSession:
             ))
 
             s("Abrindo página de login…")
-            page.goto(LOGIN_URL, wait_until="networkidle")
+            page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
 
             s("Verificando modal de aviso…")
             try:
@@ -131,17 +131,68 @@ class PlaywrightSession:
             except Exception:
                 s("Nenhum modal encontrado.")
 
+            s("Aguardando formulário de login ficar pronto…")
+            page.wait_for_selector("input[type='email']", state="visible", timeout=30000)
+            page.wait_for_selector("input[type='password']", state="visible", timeout=10000)
+
             s("Preenchendo credenciais…")
             page.fill("input[type='email']",    user)
             page.fill("input[type='password']", password)
+
+            s("Aguardando botão de submit ficar ativo…")
+            # Espera o botão estar visível E não-desabilitado
+            try:
+                page.wait_for_selector(
+                    "button[type='submit']:not([disabled])", state="visible", timeout=15000
+                )
+            except Exception:
+                # Fallback: espera apenas visível
+                page.wait_for_selector("button[type='submit']", state="visible", timeout=10000)
+
+            # Pequena pausa para garantir que validações JS do formulário finalizaram
+            page.wait_for_timeout(500)
             page.click("button[type='submit']")
 
             s("Aguardando redirecionamento…")
-            page.wait_for_url(lambda url: "login" not in url, timeout=20000)
+            try:
+                page.wait_for_url(lambda url: "login" not in url, timeout=45000)
+            except Exception:
+                # Captura screenshot para diagnóstico e verifica mensagem de erro
+                screenshot_path = "login_error.png"
+                try:
+                    page.screenshot(path=screenshot_path)
+                    s(f"Screenshot salvo em '{screenshot_path}' para diagnóstico.")
+                except Exception:
+                    pass
+
+                error_msg = page.evaluate("""() => {
+                    const selectors = [
+                        '.alert', '.error', '.error-message', '[class*="error"]',
+                        '[class*="alert"]', '.invalid-feedback', '.form-error',
+                        '[role="alert"]'
+                    ];
+                    for (const sel of selectors) {
+                        const el = document.querySelector(sel);
+                        if (el && el.offsetParent !== null && el.textContent.trim()) {
+                            return el.textContent.trim();
+                        }
+                    }
+                    return null;
+                }""")
+
+                if error_msg:
+                    raise Exception(f"Falha no login — mensagem do site: {error_msg!r}")
+                else:
+                    raise Exception(
+                        "Redirecionamento não ocorreu após 45s. "
+                        "Verifique as credenciais ou se o site exige CAPTCHA. "
+                        f"URL atual: {page.url}"
+                    )
+
             s(f"Logado! URL: {page.url}")
 
             s("Carregando dashboard…")
-            page.goto(DASHBOARD_URL, wait_until="networkidle")
+            page.goto(DASHBOARD_URL, wait_until="domcontentloaded")
             ads   = self._read_ads(page)
             total = len(ads)
 
@@ -165,7 +216,7 @@ class PlaywrightSession:
                     refresh_done_cb = payload
                     try:
                         s("Atualizando dashboard…")
-                        page.goto(DASHBOARD_URL, wait_until="networkidle")
+                        page.goto(DASHBOARD_URL, wait_until="domcontentloaded")
                         ads = self._read_ads(page)
                         if refresh_done_cb:
                             refresh_done_cb(True, ads)
@@ -205,7 +256,7 @@ class PlaywrightSession:
         try:
             s("Abrindo página do anúncio…")
             new_page = context.new_page()
-            new_page.goto(edit_url, wait_until="networkidle")
+            new_page.goto(edit_url, wait_until="domcontentloaded")
 
             # Lê a descrição atual
             current_desc = new_page.evaluate("""() => {
@@ -248,7 +299,7 @@ class PlaywrightSession:
         try:
             if DASHBOARD_URL not in page.url:
                 s("Navegando ao dashboard…")
-                page.goto(DASHBOARD_URL, wait_until="networkidle")
+                page.goto(DASHBOARD_URL, wait_until="domcontentloaded")
 
             s("Verificando disponibilidade do boost…")
             in_cooldown = page.evaluate(f"""() => {{

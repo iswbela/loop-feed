@@ -1,0 +1,810 @@
+{
+  "04a3f2a2-e9a9-4692-bc03-0e77ff3d7c46": [
+    {
+      "name": "kommonsDisclaimer",
+      "value": "agree",
+      "domain": "kommons.com",
+      "path": "/",
+      "expires": 1781204687,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.521759551.1778612834",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.345984,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_hjSessionUser_503855",
+      "value": "eyJpZCI6IjRlNTU1ZDMxLWU4ODQtNThlMy1iZWY5LTk2YWU4ZmVkODAwMSIsImNyZWF0ZWQiOjE3Nzg2MTI2Njg5NzYsImV4aXN0aW5nIjp0cnVlfQ==",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1810149464,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_r",
+      "value": "_",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_lu",
+      "value": "https://www.vivastreet.co.uk/user/login?__cf_chl_tk=_fZCeUj.EjLcd7st9MuyobBcMIBLfyqGvsC3UVvg_9U-1778612973-1.0.1.1-7A8mmDX2HnvSCFAvEJPF4lM7lXeDNnxUOxBzXkETFEg",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_did",
+      "value": "pscrb_fb61d68f-3e94-4e45-cb74-c9ab67613e7e",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_fva",
+      "value": "1778613042803",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.608508823.1778613043",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1813173042.975475,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OptanonAlertBoxClosed",
+      "value": "2026-05-12T19:10:46.706Z",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149046,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CLID",
+      "value": "98a3a20441ab4c65a39e09905e7873d6.20260512.20270512",
+      "domain": "www.clarity.ms",
+      "path": "/",
+      "expires": 1810149086.42536,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MUID",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".bing.com",
+      "path": "/",
+      "expires": 1812309086.992551,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".bat.bing.com",
+      "path": "/",
+      "expires": 1779217886.617451,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.1261454461.1778613087",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1786389086,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1779217886.992741,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "SRM_B",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1812309086.992805,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_clck",
+      "value": "eyodma%5E2%5Eg5z%5E1%5E2323",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149087,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "MUID",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".clarity.ms",
+      "path": "/",
+      "expires": 1812309087.142329,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.clarity.ms",
+      "path": "/",
+      "expires": 1779217887.142478,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_ga_NHF23E6MJG",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.307851,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_874DTTRCBL",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.325011,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_EMW0L7MEWC",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.344441,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__ps_sr",
+      "value": "_",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778631818,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_slu",
+      "value": "https://www.vivastreet.co.uk/user/account/ads?__cf_chl_tk=Meu05hLm0Pj6ImViGszRI4PAPyg34x9fILU3xorSWKQ-1778624477-1.0.1.1-ZQaBG48rSmJDp7HWwF86jyJLh95NUGVghS5Oz.Yg9wc",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778631818,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "intercom-device-id-wnsaji7t",
+      "value": "fa1c99be-13a9-4635-97c3-fe97337a3cd2",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1801958771,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "531=YfDHbr9LfCwTkHh4wvSfzBiqZMdWWL7JdbMbs0-5bykAC1OZiHCH4teb5kmf7SniZ-E_Acgm-JQLOglCUVD_otv9P8e4DELae1UBQLh5iq9tc-unYu1M5Pu7FAnz1oQg3dKcAEC-B64V2Q5hssRrO6Lbdo3L7EYV7zrW4NXIRVqor1poJllI8bi3_Ulp2LiOP30MeQ",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1794423844.863293,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "IDE",
+      "value": "AHWqTUlU0XUfCdpRp5y_R7VRXvykZQOXYhvwiycUiCKLdAQXzgCylPbRQNQcGK4W",
+      "domain": ".doubleclick.net",
+      "path": "/",
+      "expires": 1813188470.2355,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Host-csrf",
+      "value": "0eb71394-c294-4287-8f50-2b20b7bcecb0",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_favourites",
+      "value": "%5B%5D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_favourites_sync_complete",
+      "value": "true",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "intercom-session-wnsaji7t",
+      "value": "VlpTYkY1ei9BWXkwd0s3WWtwNU5uYmlTZ3dKYlhDUCtGWi9JdTJDdkdlaitXb1Qxc25hSFhrSmZJT0ZFYmZOVkF6eGFSeGp0ckJBN3FNWjFUSFN3MFU0c2NsekFPTDFkeldhZVRhL0tUWUpVVXJxVEp3S0lsMnBWVldFS0dHUjhDZkhRMGtvc1RUZmt1cTZCdXM1M0FmbDM1L3lmb0krT24xbERTbk9TRk9WMkc2Q2Q5dFFoQlBtQzR1UFhab2JXTm9HajdacnhEcHdKdCtEdWRqeWNHZz09LS1xc3BWSXRvYXl0MStLaHZpN3dzYUdBPT0=--842485f17b4379eae8c9163bcb1db272f3e8b2d7",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779233571,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_temp",
+      "value": "%7B%22last_page%22%3A%7B%22type%22%3A%22post%22%2C%22mode%22%3A%22t%22%2C%22controller%22%3A%22Post%22%7D%7D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778715173,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_uetsid",
+      "value": "5f9f0ca04e3611f1a33f4f6f2c0aa292",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778715174,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_uetvid",
+      "value": "5f9f2e004e3611f19d134d4a48ee5070",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1812324774,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_clsk",
+      "value": "fvkrua%5E1778629981098%5E6%5E0%5Ey.clarity.ms%2Fcollect",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778716381,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cflb",
+      "value": "0H28vpsC7oCEjA68eG2HzsNTYCjuNXGxK32yBniTX81",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778631816.936808,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cf_clearance",
+      "value": "cbpG4MuWBsORHOk7JgqbFuQYWqqnvCMOphpqrbsHHLI-1778630017-1.2.1.1-SWVyGsQRTuAsgdXj0XNu2_Q2qZSRL.qV8bdU4K0Lya3dEwnbQqGzU0bK7mGmZTZlHuuI5gSUSnZzrrSrCle90R.i75h_EpK5uuFlUcj9qFPn25vhYK.A2oTVai1YW9yFOYH8MR2H3d0RrbXCzo4l9CQeNzIWanSFMSFbymOmcF87XVX_4XP5tSBH2pouvheP76aQhwgqMyuT_AJGVuJWEH1RQXbcgqwMn.rxqP2l6y.o8BHXG6fhFZc.0.lR3q7Cn1mDPGW9sbIyTUUFMaIF5N142GvzxJn5Bh6Dh3hQwMAShpvS8D0wVO0qpHfO03fK_tV.IdbnaiUGHkhWMq3lTqlrwhp4vCM6BCNLbRr8itbT49hqtmn6Xzq5B2wdWihViNT9XSujV19rhe8Q.kO_hFvLqhOWG.uWoN8NngR1xu0",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810166017.816497,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://vivastreet.co.uk",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "_ga_J3N8G6G8CF",
+      "value": "GS2.1.s1778624524$o2$g1$t1778630019$j60$l1$h643101539$d5X51w9PAwghGW5TYHsX3aZHjLGOMrisrDA",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1813190019.567512,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OptanonConsent",
+      "value": "isGpcEnabled=0&datestamp=Tue+May+12+2026+20%3A53%3A39+GMT-0300+(Brasilia+Standard+Time)&version=202507.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=458283ed-b06d-47d4-b395-cc767fb74e96&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0004%3A1%2CC0003%3A1%2CC0002%3A1&intType=1&geolocation=BR%3BMG&AwaitingReconsent=false",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810166019,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_session",
+      "value": "%5B%7B%22id%22%3A%22e3b09ccc-627e-4838-b782-3e2979d17c29%22%2C%22user_name%22%3A%22Ampita%22%2C%22email%22%3A%22amparoacuna056%40gmail.com%22%2C%22usertype%22%3A%22user%22%2C%22web_usertype%22%3A%22ind%22%2C%22civility%22%3A%22%22%2C%22year_born%22%3A0%2C%22user_id%22%3A59256155%2C%22product_optin%22%3A%22%22%2C%22partners_optin%22%3A%22%22%2C%22registration_date%22%3A%22%22%2C%22confirmed%22%3Afalse%2C%22Counters%22%3A%7B%22emails%22%3A0%2C%22saved%22%3A0%2C%22alerts%22%3A0%2C%22photo%22%3A0%2C%22classifieds%22%3A0%7D%2C%22avs%22%3A%22avs_verified%22%7D%5D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779494023.02765,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "auth",
+      "value": "%7B%22accessToken%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdnMiOiJhdnNfdmVyaWZpZWQiLCJjb3VudHJ5IjoiR0IiLCJlbWFpbCI6ImFtcGFyb2FjdW5hMDU2QGdtYWlsLmNvbSIsImVtYWlsX2NoYW5nZWRfYXQiOm51bGwsImV4cCI6MTc3ODYzMDE0MiwiZmVhdHVyZWZsYWdzIjpbImlkdi1mYWlsdXJlLXJlYXNvbnMiLCJnZW9sb2MiLCJjb2hvcnQiLCJpZHYiLCJlcy1mdXp6eS1sb2NhdGlvbi1zdWdnZXN0aW9uIiwibmV3LWlkdiIsImxvZ2luIiwicG9zdCIsImNxYyIsInJhZGl1cyIsImVtYWlsLXZpc2liaWxpdHkiLCJlcy1sb2NhdGlvbi1zZWFyY2giLCJyZWplY3Rpb24tcmVhc29ucyIsIm15LWFkcyIsImFnZSIsIm1hbmRhdG9yeS1pZHYiLCJwdWJsaXNoLWdycGMiLCJlbWFpbC1hbGVydHMiLCJhY2NvdW50LWNsb3N1cmUiLCJzb2NpYWwtaW50ZWdyYXRpb25zIiwibWFyay1hcy12ZXJpZmllZCIsImFwbnYiLCJjaGVja291dCIsInB1Ymxpc2giXSwiaWF0IjoxNzc4NjMwMDIyLCJpZHZfc3RhdHVzIjoidmVyaWZpZWQiLCJpc19zZXJ2aWNlX3Byb3ZpZGVyIjpmYWxzZSwiaXNfc2VydmljZV91c2VyIjpmYWxzZSwicGVybWlzc2lvbnMiOltdLCJyZWdpc3RyYXRpb25fZGF0ZSI6IjAwMDEtMDEtMDEiLCJzdWIiOjU5MjU2MTU1LCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwidXNlcl9mbGFncyI6eyJoYXNfYWR1bHRfY2xhZCI6ZmFsc2UsImhhc19hZHVsdF9wYWlkX3VwZ3JhZGUiOmZhbHNlLCJoYXNfbWFzc2FnZV9jbGFkIjpmYWxzZSwiaGFzX3AycCI6ZmFsc2UsInVzZXJfc3ViY2F0X2NvZGVzIjoiIn0sInVzZXJuYW1lIjoiQW1waXRhIiwidXNlcnR5cGUiOiJ1c2VyIiwid2ViX3VzZXJ0eXBlIjoiaW5kIn0.HPr23zNaQk-DnJORfbWYiks-Qs-mKsTwNYQgN7IXkJs%22%2C%22refreshToken%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzk0OTQwMjIsImlhdCI6MTc3ODYzMDAyMiwic3ViIjo1OTI1NjE1NSwidG9rZW5fdHlwZSI6InJlZnJlc2gifQ.A5q374bvNPmDHPuYixX3y9w6wbCzBsogFGaG5cVrpdg%22%7D",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779494023.039302,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "20820607-8b70-4419-99f7-38ef6a267845": [
+    {
+      "name": "kommonsDisclaimer",
+      "value": "agree",
+      "domain": "kommons.com",
+      "path": "/",
+      "expires": 1781204687,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.521759551.1778612834",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.345984,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_hjSessionUser_503855",
+      "value": "eyJpZCI6IjRlNTU1ZDMxLWU4ODQtNThlMy1iZWY5LTk2YWU4ZmVkODAwMSIsImNyZWF0ZWQiOjE3Nzg2MTI2Njg5NzYsImV4aXN0aW5nIjp0cnVlfQ==",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1810149464,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_r",
+      "value": "_",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_lu",
+      "value": "https://www.vivastreet.co.uk/user/login?__cf_chl_tk=_fZCeUj.EjLcd7st9MuyobBcMIBLfyqGvsC3UVvg_9U-1778612973-1.0.1.1-7A8mmDX2HnvSCFAvEJPF4lM7lXeDNnxUOxBzXkETFEg",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_did",
+      "value": "pscrb_fb61d68f-3e94-4e45-cb74-c9ab67613e7e",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_fva",
+      "value": "1778613042803",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149042,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.608508823.1778613043",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1813173042.975475,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OptanonAlertBoxClosed",
+      "value": "2026-05-12T19:10:46.706Z",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810149046,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "MUID",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".bing.com",
+      "path": "/",
+      "expires": 1812309086.992551,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".bat.bing.com",
+      "path": "/",
+      "expires": 1779217886.617451,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.1261454461.1778613087",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1786389086,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1779217886.992741,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "SRM_B",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1812386610.686881,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MUID",
+      "value": "0FAFFAD256086B6922B4ED8557B96A4C",
+      "domain": ".clarity.ms",
+      "path": "/",
+      "expires": 1812309087.142329,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.clarity.ms",
+      "path": "/",
+      "expires": 1779217887.142478,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_ga_NHF23E6MJG",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.307851,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_874DTTRCBL",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.325011,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_EMW0L7MEWC",
+      "value": "GS2.1.s1778612833$o1$g1$t1778613401$j50$l0$h0",
+      "domain": ".kommons.com",
+      "path": "/",
+      "expires": 1813173401.344441,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "intercom-device-id-wnsaji7t",
+      "value": "fa1c99be-13a9-4635-97c3-fe97337a3cd2",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1802023164,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "IDE",
+      "value": "AHWqTUlU0XUfCdpRp5y_R7VRXvykZQOXYhvwiycUiCKLdAQXzgCylPbRQNQcGK4W",
+      "domain": ".doubleclick.net",
+      "path": "/",
+      "expires": 1813188470.2355,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_sr",
+      "value": "_",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778694997,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__ps_slu",
+      "value": "https://www.vivastreet.co.uk/user/login?__cf_chl_tk=rb81QjMuViPt4aSxMhOBTWEzUvbFReUckjX0pCTLfWU-1778690588-1.0.1.1-Y1teApGZqeNJfEpQ32oxDn7A7d8H1bdEgjWmJIBV0_8",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778694997,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "CLID",
+      "value": "98a3a20441ab4c65a39e09905e7873d6.20260512.20270513",
+      "domain": "www.clarity.ms",
+      "path": "/",
+      "expires": 1810226609.235774,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_clck",
+      "value": "eyodma%5E2%5Eg60%5E1%5E2323",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810226609,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "531=QhS8gspGgk28qCiDv7rcIkT6ZRiNASUi1jbSrytZDUN_Rv1H_T59oIECO0Bkh0X0P2rYobGa9oLuHDZOOHKmT3_MOrLnQD8gy5wFj5d5KTxlXcZe8V-U4TLcu0YYThVbiZH721ECgL-FnSXQt_0SKFJ6t9BuMUP78S5kWrOX6LvxQ3G0vCRKKraddRt-5dB9na085Q",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1794423845.438354,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Host-csrf",
+      "value": "b05847ba-e42f-4d0c-8d13-948791125412",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_favourites",
+      "value": "%5B%5D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_favourites_sync_complete",
+      "value": "true",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cflb",
+      "value": "04dTocxD1RZGRrBhCPYVAqMV8wKUm5crKhDz88iDyw",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778694314.830473,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_temp",
+      "value": "%7B%22last_page%22%3A%7B%22type%22%3A%22post%22%2C%22mode%22%3A%22t%22%2C%22controller%22%3A%22Post%22%7D%7D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778779374,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cf_clearance",
+      "value": "M3DE5r_fcbZ6GJKpFKfLYsoTn.VgqYhwn8Nr4srXbPY-1778693158-1.2.1.1-E13GdYcfzxWqI3cxUu1zF15kT7W0cBcfHmNmuGPondV3oj46zVrNOA9mHi_CD7lUZg62GTYrtUTDK7ldFoDR0fEpoUZ3QAllqMOSv0fy7pB5nvGxnq5SN22rrBvvz2S1QSodBn8DaIeHBto82ec5iOwoW9_lhNben3vjKb_0mq5EBE3nHFxqTbLLi0W6kHKLO3D5NrjSk7CTLRO09u0yBO.earhNvqJiVoxZtqa4E3MldlVNtFit.m5Fz91l5ozG6FiB53Jt1VgiKKpOEdzmPVWatYVUAopi2X_2IZi62_D8g2aXeGTnbOXu8H6tC1fjwJt9lhvzGwHHDGh4Uo2BYiJLV8HmAq05zGuXuSlNUeOeN9eWQ7ILpyC_kIH_kvTHzRyTKIDwwIcW9V1aXgTyY.BgKAo9_46D2BQnQXWNHOE",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810229158.79283,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://vivastreet.co.uk",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "_clsk",
+      "value": "19ezwbn%5E1778693159189%5E32%5E0%5Es.clarity.ms%2Fcollect",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778779559,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_uetsid",
+      "value": "5f9f0ca04e3611f1a33f4f6f2c0aa292",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1778779560,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_uetvid",
+      "value": "5f9f2e004e3611f19d134d4a48ee5070",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1812389160,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "intercom-session-wnsaji7t",
+      "value": "c1RuL3VsQmpiRDRhRmlRSGRDTFliZ29EK1pyVFVscVRscnVaZXhhdVdrYmFiNTB0QXI5dlFnaitLUEptWkgveHJaQlBrN0ZPVEl0TVVDcUFDZU5lYWI3ekpQRjd5NHdDaEdPbFMzOENZZWJ1OFVnT1hMUXJvSVd5L0NvdXM1SzdybVkrYmlWR3RKOERIVE44dUdyY3h3cElRT0E0SUx1d2YrcVo5OGdGeXlIa3ozOWNaWXM1NkJmV1U2MGJsdHdrdm1sZ3Njd0MwR1l3b1BDY3dLVmtiQT09LS1ibDJKSm43VGM5TE04bXpTenY3RFBBPT0=--48d3601ef4c2d857734d2d0d1816819b1dc03c30",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779297964,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OptanonConsent",
+      "value": "isGpcEnabled=0&datestamp=Wed+May+13+2026+14%3A26%3A39+GMT-0300+(Brasilia+Standard+Time)&version=202507.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=458283ed-b06d-47d4-b395-cc767fb74e96&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0004%3A1%2CC0003%3A1%2CC0002%3A1&intType=1&geolocation=BR%3BMG&AwaitingReconsent=false",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1810229199,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kiwii_session",
+      "value": "%5B%7B%22id%22%3A%229f79194f-5fac-48ec-916b-1feb046dba77%22%2C%22user_name%22%3A%22Larissa_Brasil%22%2C%22email%22%3A%22dagisavargas%40gmail.com%22%2C%22usertype%22%3A%22user%22%2C%22web_usertype%22%3A%22ind%22%2C%22civility%22%3A%22%22%2C%22year_born%22%3A0%2C%22user_id%22%3A64200303%2C%22product_optin%22%3A%22%22%2C%22partners_optin%22%3A%22%22%2C%22registration_date%22%3A%22%22%2C%22confirmed%22%3Afalse%2C%22Counters%22%3A%7B%22emails%22%3A0%2C%22saved%22%3A0%2C%22alerts%22%3A0%2C%22photo%22%3A0%2C%22classifieds%22%3A0%7D%2C%22avs%22%3A%22avs_verified%22%7D%5D",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779557222.884616,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "auth",
+      "value": "%7B%22accessToken%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdnMiOiJhdnNfdmVyaWZpZWQiLCJjb3VudHJ5IjoiR0IiLCJlbWFpbCI6ImRhZ2lzYXZhcmdhc0BnbWFpbC5jb20iLCJlbWFpbF9jaGFuZ2VkX2F0IjpudWxsLCJleHAiOjE3Nzg2OTMzNDIsImZlYXR1cmVmbGFncyI6WyJhY2NvdW50LWNsb3N1cmUiLCJwdWJsaXNoIiwicmFkaXVzIiwiZW1haWwtYWxlcnRzIiwicG9zdCIsIm15LWFkcyIsImlkdi1mYWlsdXJlLXJlYXNvbnMiLCJjaGVja291dCIsImxvZ2luIiwiZXMtZnV6enktbG9jYXRpb24tc3VnZ2VzdGlvbiIsImlkdiIsIm1hcmstYXMtdmVyaWZpZWQiLCJjb2hvcnQiLCJjcWMiLCJhZ2UiLCJnZW9sb2MiLCJuZXctaWR2IiwibWFuZGF0b3J5LWlkdiIsImVtYWlsLXZpc2liaWxpdHkiLCJyZWplY3Rpb24tcmVhc29ucyIsInNvY2lhbC1pbnRlZ3JhdGlvbnMiLCJhcG52IiwicHVibGlzaC1ncnBjIiwiZXMtbG9jYXRpb24tc2VhcmNoIl0sImlhdCI6MTc3ODY5MzIyMiwiaWR2X3N0YXR1cyI6InZlcmlmaWVkIiwiaXNfc2VydmljZV9wcm92aWRlciI6ZmFsc2UsImlzX3NlcnZpY2VfdXNlciI6ZmFsc2UsInBlcm1pc3Npb25zIjpbXSwicmVnaXN0cmF0aW9uX2RhdGUiOiIwMDAxLTAxLTAxIiwic3RhdHVzIjoiZW5hYmxlIiwic3ViIjo2NDIwMDMwMywidG9rZW5fdHlwZSI6ImFjY2VzcyIsInVzZXJfZmxhZ3MiOnsiaGFzX2FkdWx0X2NsYWQiOnRydWUsImhhc19hZHVsdF9wYWlkX3VwZ3JhZGUiOmZhbHNlLCJoYXNfbWFzc2FnZV9jbGFkIjpmYWxzZSwiaGFzX3AycCI6dHJ1ZSwidXNlcl9zdWJjYXRfY29kZXMiOiJhZHVsdF9zZXJ2aWNlcyJ9LCJ1c2VybmFtZSI6Ikxhcmlzc2FfQnJhc2lsIiwidXNlcnR5cGUiOiJ1c2VyIiwid2ViX3VzZXJ0eXBlIjoiaW5kIn0._RSQlIn0hYl9a5EykBmnOE5L4p8AHYABfReMl0L92Wo%22%2C%22refreshToken%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzk1NTcyMjIsImlhdCI6MTc3ODY5MzIyMiwic3ViIjo2NDIwMDMwMywidG9rZW5fdHlwZSI6InJlZnJlc2gifQ.UQUwuL3gTEfVc8ZcvOCsay9unO5rzBNW5BKkiW8uePk%22%7D",
+      "domain": "www.vivastreet.co.uk",
+      "path": "/",
+      "expires": 1779557222.899879,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_J3N8G6G8CF",
+      "value": "GS2.1.s1778690598$o3$g1$t1778693223$j60$l1$h1402485526$d473NS0s2ib1RvafeSIawor7AJCQHHSbonA",
+      "domain": ".vivastreet.co.uk",
+      "path": "/",
+      "expires": 1813253223.230225,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ]
+}
