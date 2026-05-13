@@ -200,13 +200,13 @@ class VivaStreetAuth:
             captured = {}
 
             def on_response(response):
-                if VIVASTREET_API_LOGIN_URL in response.url and response.status == 200:
-                    try:
+                try:
+                    if VIVASTREET_API_LOGIN_URL in response.url and response.status == 200:
                         data = response.json()
                         if data.get("access_token"):
                             captured.update(data)
-                    except Exception:
-                        pass
+                except Exception:
+                    pass
 
             page.on("response", on_response)
 
@@ -235,7 +235,16 @@ class VivaStreetAuth:
             s("Sessao expirada -- abrindo formulario de login...")
             page.goto(VIVASTREET_LOGIN_URL, wait_until="domcontentloaded", timeout=_LOGIN_TIMEOUT_MS)
 
-            s("Aguardando pagina carregar (3s)...")
+            # Aguarda o campo de email aparecer — funciona tanto na chegada direta
+            # quanto após CAPTCHA (o formulário só aparece depois que o CAPTCHA é resolvido)
+            s("Aguardando campo de email ficar visivel (resolve o CAPTCHA se aparecer)...")
+            try:
+                page.wait_for_selector('#email', state='visible', timeout=_RESPONSE_MAX_S * 1000)
+            except Exception:
+                s("Campo de email nao apareceu no tempo limite.")
+
+            # Pausa de 3s depois que o formulario aparece, para garantir que o Vue carregou
+            s("Formulario visivel. Aguardando 3s para estabilizar...")
             page.wait_for_timeout(3000)
 
             try:
@@ -305,7 +314,6 @@ class VivaStreetAuth:
         finally:
             try:
                 if used_cdp:
-                    # Não fecha o browser do usuário — apenas fecha a aba aberta
                     if page:
                         try:
                             page.close()
@@ -313,7 +321,7 @@ class VivaStreetAuth:
                             pass
                     if cdp_brow:
                         try:
-                            cdp_brow.close()  # apenas desconecta do CDP
+                            cdp_brow.close()
                         except Exception:
                             pass
                 else:

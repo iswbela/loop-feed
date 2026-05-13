@@ -142,166 +142,77 @@ def wait_for_cdp(timeout: float = _CDP_WAIT_TIMEOUT) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Controle de processos
+# Launch e ensure
 # ---------------------------------------------------------------------------
 
-_BROWSER_EXE_NAMES = {
-    "chrome": "chrome.exe",
-    "opera":  "opera.exe",
-}
-
-
-def kill_browser(browser_name: str, status_cb: Optional[Callable[[str], None]] = None) -> None:
+def launch_with_cdp(exe_path: str, status_cb: Optional[Callable] = None) -> bool:
     """
-    Encerra todas as instâncias do browser informado via taskkill.
-    Necessário para que o --remote-debugging-port seja aceito na próxima inicialização
-    (o Chrome ignora a flag se já existir outro processo rodando).
+    Inicia o browser com --remote-debugging-port e --user-data-dir persistente.
+    Retorna True se o CDP ficou disponível dentro do timeout.
     """
-    exe = _BROWSER_EXE_NAMES.get(browser_name.lower(), "chrome.exe")
-    try:
-        result = subprocess.run(
-            ["taskkill", "/F", "/IM", exe, "/T"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=10,
-        )
-        if result.returncode == 0:
-            if status_cb:
-                status_cb(f"🛑 Instâncias de {exe} encerradas.")
-            time.sleep(1.5)  # aguarda o processo morrer de fato
-        else:
-            # Código 128 = processo não encontrado (já fechado)
-            if status_cb:
-                status_cb(f"ℹ️ Nenhuma instância de {exe} em execução.")
-    except Exception as e:
-        if status_cb:
-            status_cb(f"⚠️ Não foi possível encerrar {exe}: {e}")
-
-
-def launch_with_cdp(
-    exe_path: str,
-    profile_dir: Optional[Path] = None,
-    extra_args: Optional[list] = None,
-) -> subprocess.Popen:
-    """
-    Inicia o browser com remote debugging habilitado na porta CDP_PORT.
-    Usa APP_PROFILE_DIR como perfil persistente por padrão.
-
-    Args:
-        exe_path:    Caminho para o executável do browser.
-        profile_dir: Diretório do perfil (padrão: APP_PROFILE_DIR).
-        extra_args:  Argumentos adicionais opcionais.
-
-    Returns:
-        O objeto Popen do processo iniciado.
-    """
-    if profile_dir is None:
-        profile_dir = APP_PROFILE_DIR
-
-    profile_dir = Path(profile_dir)
-    profile_dir.mkdir(parents=True, exist_ok=True)
-
-    args = [
-        str(exe_path),
-        f"--remote-debugging-port={CDP_PORT}",
-        f"--user-data-dir={profile_dir}",
-        "--no-first-run",
-        "--no-default-browser-check",
-        # Oculta indicadores de automação do DevTools
-        "--disable-blink-features=AutomationControlled",
-        # Desabilita extensões que podem interferir
-        "--disable-extensions-except=",
-        # Janela normal (não minimizada)
-        "--start-maximized",
-    ]
-
-    if extra_args:
-        args.extend(extra_args)
-
-    return subprocess.Popen(
-        args,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        # Desanexa do processo pai para que o browser não feche junto com o app
-        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-        if os.name == "nt" else 0,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Ponto de entrada principal
-# ---------------------------------------------------------------------------
-
-def ensure_browser_with_cdp(
-    status_cb: Optional[Callable[[str], None]] = None,
-) -> Tuple[bool, str]:
-    """
-    Garante que um browser com CDP esteja acessível em CDP_ENDPOINT.
-
-    Fluxo:
-      1. Verifica se o CDP já está disponível  → reutiliza (zero impacto)
-      2. Detecta o melhor browser instalado
-      3. Encerra instâncias existentes do browser (necessário para Chrome aceitar CDP)
-      4. Inicia o browser com --remote-debugging-port
-      5. Aguarda o CDP ficar disponível
-      6. Valida e retorna
-
-    Returns:
-        (True, mensagem_ok)  se o CDP ficou disponível.
-        (False, mensagem_erro) caso contrário.
-    """
-    def _s(msg: str) -> None:
-        print(f"[BROWSER] {msg}", flush=True)
+    def s(msg):
+        print(msg, flush=True)
         if status_cb:
             status_cb(msg)
 
-    # ── 1. CDP já disponível? ────────────────────────────────────────────────
+    APP_PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+
+    args = [
+        exe_path,
+        f"--remote-debugging-port={CDP_PORT}",
+        f"--user-data-dir={APP_PROFILE_DIR}",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-blink-features=AutomationControlled",
+    ]
+
+    try:
+        subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        s(f"Browser iniciado. Aguardando CDP na porta {CDP_PORT}...")
+        return wait_for_cdp()
+    except Exception as exc:
+        s(f"Erro ao iniciar browser: {exc}")
+        return False
+
+
+def ensure_browser_with_cdp(status_cb: Optional[Callable] = None) -> Tuple[bool, str]:
+    """
+    Garante que um browser compatível está rodando com CDP ativo.
+
+    1. Se CDP já estiver disponível → retorna (True, "CDP já disponível").
+    2. Caso contrário, detecta e inicia o browser, aguarda CDP.
+    3. Se nenhum browser for encontrado → retorna (False, mensagem de erro).
+
+    Retorna (success: bool, message: str).
+    """
+    def s(msg):
+        print(msg, flush=True)
+        if status_cb:
+            status_cb(msg)
+
+    # Verifica se CDP já está ativo (browser já aberto)
     ok, info = cdp_info()
     if ok:
-        ver = info.get("Browser", "desconhecido") if info else "desconhecido"
-        _s(f"✅ CDP já disponível → {ver}")
-        return True, f"CDP disponível: {ver}"
+        browser_name = (info or {}).get("Browser", "Browser")
+        s(f"CDP disponivel: {browser_name}")
+        return True, f"CDP disponivel: {browser_name}"
 
-    # ── 2. Detectar browser ──────────────────────────────────────────────────
-    browser_name, exe_path = detect_browser()
-    if not exe_path:
+    # Detecta browser disponível
+    s("CDP nao disponivel. Detectando browser instalado...")
+    name, exe = detect_browser()
+    if not exe:
         msg = (
-            "❌ Nenhum browser compatível encontrado.\n"
-            "Instale o Google Chrome, Opera ou Opera GX e tente novamente."
+            "Nenhum browser compativel encontrado (Chrome, Opera ou Opera GX). "
+            "Instale um desses navegadores e tente novamente."
         )
-        _s(msg)
+        s(msg)
         return False, msg
 
-    _s(f"🔍 Browser detectado: {browser_name} → {exe_path}")
-    _s(f"📁 Perfil persistente: {APP_PROFILE_DIR}")
-
-    # ── 3. Encerrar instâncias existentes ────────────────────────────────────
-    # O Chrome ignora --remote-debugging-port se já existe um processo em execução.
-    # É necessário fechar todas as instâncias antes de relançar.
-    _s(f"🛑 Encerrando instâncias existentes de {browser_name}…")
-    kill_browser(browser_name, status_cb=_s)
-
-    # ── 4. Iniciar com CDP ───────────────────────────────────────────────────
-    _s(f"🚀 Iniciando {browser_name} com CDP na porta {CDP_PORT}…")
-    try:
-        launch_with_cdp(exe_path)
-    except Exception as e:
-        msg = f"❌ Falha ao iniciar o browser: {e}"
-        _s(msg)
+    s(f"Browser detectado: {name} ({exe})")
+    launched = launch_with_cdp(exe, status_cb=status_cb)
+    if launched:
+        return True, f"{name} iniciado com CDP na porta {CDP_PORT}."
+    else:
+        msg = f"Browser iniciado mas CDP nao ficou disponivel em {_CDP_WAIT_TIMEOUT}s."
+        s(msg)
         return False, msg
-
-    # ── 5. Aguardar CDP ──────────────────────────────────────────────────────
-    _s("⏳ Aguardando CDP ficar disponível…")
-    if not wait_for_cdp(timeout=_CDP_WAIT_TIMEOUT):
-        msg = (
-            f"❌ Timeout: CDP não ficou disponível após {_CDP_WAIT_TIMEOUT:.0f}s.\n"
-            "Verifique se o browser iniciou corretamente."
-        )
-        _s(msg)
-        return False, msg
-
-    # ── 6. Validar ───────────────────────────────────────────────────────────
-    ok, info = cdp_info()
-    ver = info.get("Browser", "desconhecido") if info else "desconhecido"
-    _s(f"✅ Browser pronto: {ver}")
-    return True, f"CDP disponível: {ver}"
