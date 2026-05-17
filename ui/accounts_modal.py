@@ -5,6 +5,8 @@ Permite adicionar, editar e remover contas do Kommons e VivaStreet.
 Acessível a partir da janela principal via botão "⚙️ Gerenciar Contas".
 """
 
+from __future__ import annotations
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 
